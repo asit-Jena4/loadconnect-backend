@@ -7,10 +7,10 @@ const PORT = 4000;
 
 // MySQL pool connection
 const pool = mysql.createPool({
-  host: 'localhost',       // Change if using remote DB
-  user: 'root',            // Your MySQL username
-  password: 'A1s2i3t4@', // Your MySQL password
-  database: 'loadconnect', // Your MySQL database name
+  host: 'localhost',
+  user: 'root',
+  password: 'A1s2i3t4@',
+  database: 'loadconnect',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -96,6 +96,56 @@ app.get('/api/loads/:id', async (req, res) => {
   }
 });
 
+// Create a new load
+app.post('/api/loads', async (req, res) => {
+  try {
+    const {
+      source_city,
+      source_state,
+      destination_city,
+      destination_state,
+      distance,
+      weight,
+      scheduled_date,
+      material_type,
+      truck_type,
+      description,
+      price,
+      posted_by
+    } = req.body;
+
+    const query = `
+      INSERT INTO loads (
+        source_city, source_state,
+        destination_city, destination_state,
+        distance, weight, scheduled_date,
+        material_type, truck_type,
+        description, price, posted_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.execute(query, [
+      source_city, source_state,
+      destination_city, destination_state,
+      distance, weight, scheduled_date,
+      material_type, truck_type,
+      description, price, posted_by
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: 'Load created successfully',
+      loadId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error inserting load:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create load'
+    });
+  }
+});
+
 // API info endpoint
 app.get('/api', (req, res) => {
   res.json({
@@ -104,7 +154,8 @@ app.get('/api', (req, res) => {
     endpoints: {
       health: "GET /health",
       loads: "GET /api/loads",
-      singleLoad: "GET /api/loads/:id"
+      singleLoad: "GET /api/loads/:id",
+      createLoad: "POST /api/loads"
     }
   });
 });
@@ -117,7 +168,8 @@ app.use('*', (req, res) => {
       "GET /health",
       "GET /api",
       "GET /api/loads",
-      "GET /api/loads/:id"
+      "GET /api/loads/:id",
+      "POST /api/loads"
     ]
   });
 });
@@ -136,4 +188,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
 
-module.exports = app;
+module.exp
