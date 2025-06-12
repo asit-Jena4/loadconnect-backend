@@ -149,17 +149,56 @@ app.post('/api/loads', async (req, res) => {
   }
 });
 
+// Login API
+app.post('/api/auth/login', async (req, res) => {
+  const { mobile, password } = req.body;
+
+  if (!mobile || !password) {
+    return res.status(400).json({ success: false, message: "Mobile and password are required." });
+  }
+
+  try {
+    const [rows] = await pool.execute('SELECT * FROM users WHERE mobile = ?', [mobile]);
+
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: "Invalid mobile number or password." });
+    }
+
+    const user = rows[0];
+
+    // Plain text password match (can replace with bcrypt if needed)
+    if (user.password !== password) {
+      return res.status(401).json({ success: false, message: "Invalid credentials." });
+    }
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        mobile: user.mobile
+      }
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 // API info endpoint
 app.get('/api', (req, res) => {
   res.json({
     name: "LoadConnect API",
     version: "1.0.0",
     endpoints: {
-      health: "GET /health",
-      loads: "GET /api/loads",
-      singleLoad: "GET /api/loads/:id",
-      createLoad: "POST /api/loads"
-    }
+  health: "GET /health",
+  loads: "GET /api/loads",
+  singleLoad: "GET /api/loads/:id",
+  createLoad: "POST /api/loads",
+  login: "POST /api/auth/login"
+}
+
   });
 });
 
