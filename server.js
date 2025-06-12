@@ -1,4 +1,4 @@
-require('dotenv').config(); // 
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -6,7 +6,6 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-
 
 // MySQL pool connection
 const pool = mysql.createPool({
@@ -19,7 +18,6 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
 
 // Middleware
 app.use(cors());
@@ -192,9 +190,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
-// Remove or fix this:
-// module.exp ❌
-
-
-
