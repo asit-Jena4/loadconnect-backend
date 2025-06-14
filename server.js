@@ -211,7 +211,8 @@ app.use('*', (req, res) => {
       "GET /api",
       "GET /api/loads",
       "GET /api/loads/:id",
-      "POST /api/loads"
+      "POST /api/loads",
+      "POST /api/auth/login" // ✅ add this line
     ]
   });
 });
