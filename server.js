@@ -160,7 +160,6 @@ app.use('/pay', express.static(path.join(__dirname, 'public')));
 
 
 
-// ✅ Global 404 fallback
 app.use('*', (req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -175,7 +174,11 @@ app.use('*', (req, res) => {
       "POST /api/customer/register",
       "POST /api/load/post",
       "GET /api/load/search",
-      "POST /api/tracking/update"
+      "POST /api/tracking/update",
+      "GET /api/tracking/:truck_id",       // ✅ Fetch live location
+      "GET /gps/map.html",                 // ✅ Live truck map
+      "GET /gps/route.html",               // ✅ Route optimizer
+      "GET /gps/payment.html"              // ✅ UPI QR generator
     ]
   });
 });
