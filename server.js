@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
@@ -7,7 +6,7 @@ const mysql = require('mysql2/promise');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// MySQL pool connection
+// ✅ MySQL Pool Connection
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -19,13 +18,15 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Middleware
+
+
+// ✅ Middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
-// Health check endpoint
+// ✅ Health Check
 app.get('/health', (req, res) => {
-  console.log('Health check requested');
   res.json({
     status: "OK",
     message: "LoadConnect API is running",
@@ -34,11 +35,30 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Get all loads from MySQL with optional filters
+// ✅ Static API Info
+app.get('/api', (req, res) => {
+  res.json({
+    name: "LoadConnect API",
+    version: "1.0.0",
+    endpoints: {
+      health: "GET /health",
+      apiInfo: "GET /api",
+      loads: "GET /api/loads",
+      singleLoad: "GET /api/loads/:id",
+      createLoad: "POST /api/loads",
+      login: "POST /api/auth/login",
+      registerOperator: "POST /api/operator/register",
+      registerCustomer: "POST /api/customer/register",
+      postLoad: "POST /api/load/post",
+      searchLoad: "GET /api/load/search"
+    }
+  });
+});
+
+// ✅ Load APIs (original)
 app.get('/api/loads', async (req, res) => {
   try {
     const { status, source_city, destination_city } = req.query;
-
     let query = 'SELECT * FROM loads WHERE 1=1';
     const params = [];
 
@@ -46,93 +66,59 @@ app.get('/api/loads', async (req, res) => {
       query += ' AND status = ?';
       params.push(status);
     }
-
     if (source_city) {
       query += ' AND source_city LIKE ?';
       params.push(`%${source_city}%`);
     }
-
     if (destination_city) {
       query += ' AND destination_city LIKE ?';
       params.push(`%${destination_city}%`);
     }
 
     const [rows] = await pool.execute(query, params);
-
-    res.json({
-      success: true,
-      count: rows.length,
-      data: rows
-    });
-  } catch (error) {
-    console.error('Error fetching loads from MySQL:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch loads from database'
-    });
+    res.json({ success: true, count: rows.length, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to fetch loads' });
   }
 });
 
-// Get single load by ID
 app.get('/api/loads/:id', async (req, res) => {
   try {
     const loadId = parseInt(req.params.id);
     const [rows] = await pool.execute('SELECT * FROM loads WHERE id = ?', [loadId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Load not found'
-      });
+      return res.status(404).json({ success: false, error: 'Load not found' });
     }
 
-    res.json({
-      success: true,
-      data: rows[0]
-    });
-  } catch (error) {
-    console.error('Error getting load by ID:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get load from database'
-    });
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to get load' });
   }
 });
 
-// Create a new load
 app.post('/api/loads', async (req, res) => {
   try {
     const {
-      source_city,
-      source_state,
-      destination_city,
-      destination_state,
-      distance,
-      weight,
-      scheduled_date,
-      material_type,
-      truck_type,
-      description,
-      price,
-      posted_by
-    } = req.body;
-
-    const query = `
-      INSERT INTO loads (
-        source_city, source_state,
-        destination_city, destination_state,
-        distance, weight, scheduled_date,
-        material_type, truck_type,
-        description, price, posted_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const [result] = await pool.execute(query, [
       source_city, source_state,
       destination_city, destination_state,
       distance, weight, scheduled_date,
       material_type, truck_type,
       description, price, posted_by
+    } = req.body;
+
+    const query = `
+      INSERT INTO loads (
+        source_city, source_state, destination_city, destination_state,
+        distance, weight, scheduled_date,
+        material_type, truck_type, description, price, posted_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await pool.execute(query, [
+      source_city, source_state, destination_city, destination_state,
+      distance, weight, scheduled_date,
+      material_type, truck_type, description, price, posted_by
     ]);
 
     res.status(201).json({
@@ -140,69 +126,41 @@ app.post('/api/loads', async (req, res) => {
       message: 'Load created successfully',
       loadId: result.insertId
     });
-  } catch (error) {
-    console.error('Error inserting load:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create load'
-    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to create load' });
   }
 });
 
-// Login API
-app.post('/api/auth/login', async (req, res) => {
-  const { mobile, password } = req.body;
+// ✅ Import Routes
+const authRoutes = require('./routes/authRoutes');
+const operatorRoutes = require('./routes/operatorRoutes');
+const customerRoutes = require('./routes/customerRoute');
+const loadRoutes = require('./routes/loadRoutes');
+const trackingRoutes = require('./routes/trackingRoutes');
+console.log("✅ trackingRoutes loaded");
 
-  if (!mobile || !password) {
-    return res.status(400).json({ success: false, message: "Mobile and password are required." });
-  }
 
-  try {
-    const [rows] = await pool.execute('SELECT * FROM users WHERE mobile = ?', [mobile]);
 
-    if (rows.length === 0) {
-      return res.status(401).json({ success: false, message: "Invalid mobile number or password." });
-    }
+// ✅ Register Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/operator', operatorRoutes);
+app.use('/api/customer', customerRoutes);
+app.use('/api/load', loadRoutes); // includes /post, /search, and /load-specific 404s
+app.use('/api/tracking', trackingRoutes);
 
-    const user = rows[0];
 
-    // Plain text password match (can replace with bcrypt if needed)
-    if (user.password !== password) {
-      return res.status(401).json({ success: false, message: "Invalid credentials." });
-    }
+const path = require('path');
+app.use('/gps', express.static(path.join(__dirname, 'gps')));
 
-    res.json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.name,
-        mobile: user.mobile
-      }
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
 
-// API info endpoint
-app.get('/api', (req, res) => {
-  res.json({
-    name: "LoadConnect API",
-    version: "1.0.0",
-    endpoints: {
-  health: "GET /health",
-  loads: "GET /api/loads",
-  singleLoad: "GET /api/loads/:id",
-  createLoad: "POST /api/loads",
-  login: "POST /api/auth/login"
-}
+app.use('/pay', express.static(path.join(__dirname, 'public')));
 
-  });
-});
 
-// 404 handler
+
+
+
+
+// ✅ Global 404 fallback
 app.use('*', (req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -212,21 +170,23 @@ app.use('*', (req, res) => {
       "GET /api/loads",
       "GET /api/loads/:id",
       "POST /api/loads",
-      "POST /api/auth/login" // ✅ add this line
+      "POST /api/auth/login",
+      "POST /api/operator/register",
+      "POST /api/customer/register",
+      "POST /api/load/post",
+      "GET /api/load/search",
+      "POST /api/tracking/update"
     ]
   });
 });
 
-// Global error handler
+// ✅ Global Error Handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message
-  });
+  res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
-// Start server
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
