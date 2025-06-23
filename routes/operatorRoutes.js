@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../upload');
 const pool = require('../db'); // PostgreSQL pool
+const bcrypt = require('bcryptjs');
 
 // POST /api/operator/register
 router.post('/register', upload.array('documents'), async (req, res) => {
@@ -23,14 +24,16 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       gstNo,
       aadharNo,
       drivingLicense,
-      detailCollection
+      detailCollection,
+      password,
+      confirmPassword
     } = req.body;
 
     const documents = req.files.map(file => file.filename).join(',');
 
     const safe = (v) => (v === undefined || v === '' ? null : v);
 
-    // ✅ 1. Check if operator already exists (PostgreSQL uses $1)
+    // ✅ Check if operator already exists (PostgreSQL uses $1)
     const checkQuery = 'SELECT 1 FROM truck_operators WHERE mobile = $1 LIMIT 1';
     const result = await pool.query(checkQuery, [safe(phone)]);
 
@@ -38,13 +41,21 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       return res.status(400).json({ message: 'Mobile number already registered' });
     }
 
-    // ✅ 2. Insert new operator
+    // ✅ Check if passwords match
+    if (!password || !confirmPassword || password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match or missing' });
+    }
+
+    // ✅ Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Insert new operator
     const insertQuery = `
       INSERT INTO truck_operators (
         first_name, last_name, email, mobile, dob, number_of_trucks, address,
         country, pincode, district, state, city, pan_number, gst_number,
-        aadhaar_number, driving_license_number, detail_collection, documents
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        aadhaar_number, driving_license_number, detail_collection, documents, password
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
     `;
 
     const values = [
@@ -52,7 +63,7 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       safe(truckCount), safe(address), safe(country), safe(pincode),
       safe(district), safe(state), safe(city), safe(panNo),
       safe(gstNo), safe(aadharNo), safe(drivingLicense),
-      safe(detailCollection), safe(documents)
+      safe(detailCollection), safe(documents), hashedPassword
     ];
 
     await pool.query(insertQuery, values);
