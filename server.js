@@ -1,24 +1,19 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ✅ MySQL Pool Connection
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+// ✅ PostgreSQL Pool Connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Important for Neon
+  }
 });
-
-
 
 // ✅ Middlewares
 const allowedOrigins = [
@@ -28,7 +23,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin like mobile apps or curl
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -37,7 +31,6 @@ app.use(cors({
   },
   credentials: true
 }));
-
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
@@ -72,7 +65,7 @@ app.get('/api', (req, res) => {
   });
 });
 
-// ✅ Load APIs (original)
+// ✅ Load APIs (PostgreSQL adjusted)
 app.get('/api/loads', async (req, res) => {
   try {
     const { status, source_city, destination_city } = req.query;
@@ -80,20 +73,20 @@ app.get('/api/loads', async (req, res) => {
     const params = [];
 
     if (status) {
-      query += ' AND status = ?';
+      query += ' AND status = $' + (params.length + 1);
       params.push(status);
     }
     if (source_city) {
-      query += ' AND source_city LIKE ?';
+      query += ' AND source_city ILIKE $' + (params.length + 1);
       params.push(`%${source_city}%`);
     }
     if (destination_city) {
-      query += ' AND destination_city LIKE ?';
+      query += ' AND destination_city ILIKE $' + (params.length + 1);
       params.push(`%${destination_city}%`);
     }
 
-    const [rows] = await pool.execute(query, params);
-    res.json({ success: true, count: rows.length, data: rows });
+    const result = await pool.query(query, params);
+    res.json({ success: true, count: result.rows.length, data: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to fetch loads' });
   }
@@ -102,13 +95,13 @@ app.get('/api/loads', async (req, res) => {
 app.get('/api/loads/:id', async (req, res) => {
   try {
     const loadId = parseInt(req.params.id);
-    const [rows] = await pool.execute('SELECT * FROM loads WHERE id = ?', [loadId]);
+    const result = await pool.query('SELECT * FROM loads WHERE id = $1', [loadId]);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Load not found' });
     }
 
-    res.json({ success: true, data: rows[0] });
+    res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to get load' });
   }
@@ -129,10 +122,10 @@ app.post('/api/loads', async (req, res) => {
         source_city, source_state, destination_city, destination_state,
         distance, weight, scheduled_date,
         material_type, truck_type, description, price, posted_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
     `;
 
-    const [result] = await pool.execute(query, [
+    const result = await pool.query(query, [
       source_city, source_state, destination_city, destination_state,
       distance, weight, scheduled_date,
       material_type, truck_type, description, price, posted_by
@@ -141,7 +134,7 @@ app.post('/api/loads', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Load created successfully',
-      loadId: result.insertId
+      loadId: result.rows[0].id
     });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to create load' });
@@ -156,26 +149,15 @@ const loadRoutes = require('./routes/loadRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
 console.log("✅ trackingRoutes loaded");
 
-
-
 // ✅ Register Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/operator', operatorRoutes);
 app.use('/api/customer', customerRoutes);
-app.use('/api/load', loadRoutes); // includes /post, /search, and /load-specific 404s
+app.use('/api/load', loadRoutes);
 app.use('/api/tracking', trackingRoutes);
 
-
-const path = require('path');
 app.use('/gps', express.static(path.join(__dirname, 'gps')));
-
-
 app.use('/pay', express.static(path.join(__dirname, 'public')));
-
-
-
-
-
 
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -192,10 +174,10 @@ app.use('*', (req, res) => {
       "POST /api/load/post",
       "GET /api/load/search",
       "POST /api/tracking/update",
-      "GET /api/tracking/:truck_id",       // ✅ Fetch live location
-      "GET /gps/map.html",                 // ✅ Live truck map
-      "GET /gps/route.html",               // ✅ Route optimizer
-      "GET /gps/payment.html"              // ✅ UPI QR generator
+      "GET /api/tracking/:truck_id",
+      "GET /gps/map.html",
+      "GET /gps/route.html",
+      "GET /gps/payment.html"
     ]
   });
 });
