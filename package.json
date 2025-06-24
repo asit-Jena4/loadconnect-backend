@@ -14,9 +14,9 @@
     "api",
     "nodejs",
     "express",
-    "mysql"
+    "postgresql"
   ],
-  "author": "Your Name",
+  "author": "Asit Jena",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -34,3 +34,4 @@
     "node": ">=16.0.0"
   }
 }
+

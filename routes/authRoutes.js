@@ -2,34 +2,42 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../db'); // Make sure db.js exports MySQL pool
+const pool = require('../db'); // PostgreSQL pool
 
-// Login route
+// Login route for both customers and operators
 router.post('/login', async (req, res) => {
-  const { phone, password } = req.body;
+  const { phone, password, user_type } = req.body;
 
-  if (!phone || !password) {
-    return res.status(400).json({ success: false, message: "Phone and password are required." });
+  if (!phone || !password || !user_type) {
+    return res.status(400).json({ success: false, message: "Phone, password, and user type are required." });
+  }
+
+  // Determine table based on user type
+  let table;
+  if (user_type === 'operator') {
+    table = 'truck_operators';
+  } else if (user_type === 'customer') {
+    table = 'customers';
+  } else {
+    return res.status(400).json({ success: false, message: "Invalid user type." });
   }
 
   try {
-    const [rows] = await pool.execute('SELECT * FROM users WHERE phone = ?', [phone]);
+    const result = await pool.query(`SELECT * FROM ${table} WHERE mobile = $1`, [phone]);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ success: false, message: "User not found." });
     }
 
-    const user = rows[0];
+    const user = result.rows[0];
 
-    // 🔐 Compare hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials." });
     }
 
-    // 🔑 Generate JWT token
-    const token = jwt.sign({ id: user.id, phone: user.phone }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, phone: user.mobile }, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
 
@@ -39,9 +47,9 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        username: user.username,
-        phone: user.phone,
-        user_type: user.user_type
+        name: user.first_name || user.username,
+        phone: user.mobile,
+        user_type
       }
     });
   } catch (error) {
