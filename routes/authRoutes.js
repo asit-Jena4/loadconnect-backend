@@ -4,7 +4,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 
-// ✅ 1. OTP Request Route
+// ✅ Twilio Setup
+const twilio = require('twilio');
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// ✅ 1. OTP Request Route with SMS
 router.post('/request-otp', async (req, res) => {
   const { phone, user_type } = req.body;
 
@@ -12,7 +16,7 @@ router.post('/request-otp', async (req, res) => {
     return res.status(400).json({ message: "Phone and user type are required." });
   }
 
-  let table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
+  const table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
   if (!table) return res.status(400).json({ message: "Invalid user type" });
 
   try {
@@ -25,12 +29,16 @@ router.post('/request-otp', async (req, res) => {
     const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
     await pool.query(`UPDATE ${table} SET otp_code = $1, otp_expiry = $2 WHERE mobile = $3`, [
-      otp,
-      expiry,
-      phone
+      otp, expiry, phone
     ]);
 
-    console.log(`OTP for ${phone} (${user_type}): ${otp}`);
+    // ✅ Send OTP via SMS
+    await client.messages.create({
+      body: `Your LoadConnect OTP is: ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: `+91${phone}`
+    });
+
     res.json({ message: "OTP sent to your registered phone number." });
   } catch (error) {
     console.error("Request OTP error:", error.message);
@@ -50,7 +58,7 @@ router.post('/verify-otp', async (req, res) => {
     return res.status(400).json({ message: "Passwords do not match." });
   }
 
-  let table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
+  const table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
   if (!table) return res.status(400).json({ message: "Invalid user type" });
 
   try {
@@ -77,7 +85,7 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
-// ✅ 3. Login Route (unchanged)
+// ✅ 3. Login Route
 router.post('/login', async (req, res) => {
   const { phone, password, user_type } = req.body;
 
@@ -130,3 +138,4 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
