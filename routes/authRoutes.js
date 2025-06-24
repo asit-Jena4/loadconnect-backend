@@ -2,9 +2,82 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../db'); // PostgreSQL pool
+const pool = require('../db');
 
-// Login route for both customers and operators
+// ✅ 1. OTP Request Route
+router.post('/request-otp', async (req, res) => {
+  const { phone, user_type } = req.body;
+
+  if (!phone || !user_type) {
+    return res.status(400).json({ message: "Phone and user type are required." });
+  }
+
+  let table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
+  if (!table) return res.status(400).json({ message: "Invalid user type" });
+
+  try {
+    const result = await pool.query(`SELECT * FROM ${table} WHERE mobile = $1`, [phone]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Phone number not registered" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    await pool.query(`UPDATE ${table} SET otp_code = $1, otp_expiry = $2 WHERE mobile = $3`, [
+      otp,
+      expiry,
+      phone
+    ]);
+
+    console.log(`OTP for ${phone} (${user_type}): ${otp}`);
+    res.json({ message: "OTP sent to your registered phone number." });
+  } catch (error) {
+    console.error("Request OTP error:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// ✅ 2. Verify OTP and Reset Password
+router.post('/verify-otp', async (req, res) => {
+  const { phone, otp, newPassword, confirmPassword, user_type } = req.body;
+
+  if (!phone || !otp || !newPassword || !confirmPassword || !user_type) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match." });
+  }
+
+  let table = user_type === 'operator' ? 'truck_operators' : user_type === 'customer' ? 'customers' : null;
+  if (!table) return res.status(400).json({ message: "Invalid user type" });
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM ${table} WHERE mobile = $1 AND otp_code = $2 AND otp_expiry > NOW()`,
+      [phone, otp]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: "Invalid or expired OTP." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      `UPDATE ${table} SET password = $1, otp_code = NULL, otp_expiry = NULL WHERE mobile = $2`,
+      [hashedPassword, phone]
+    );
+
+    res.json({ message: "Password reset successful." });
+  } catch (error) {
+    console.error("OTP Verify error:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// ✅ 3. Login Route (unchanged)
 router.post('/login', async (req, res) => {
   const { phone, password, user_type } = req.body;
 
@@ -12,7 +85,6 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ success: false, message: "Phone, password, and user type are required." });
   }
 
-  // Determine table based on user type
   let table;
   if (user_type === 'operator') {
     table = 'truck_operators';
@@ -30,7 +102,6 @@ router.post('/login', async (req, res) => {
     }
 
     const user = result.rows[0];
-
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
