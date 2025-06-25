@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../upload');
+const upload = require('../middlewares/uploads'); // ✅ Keep only this one
 const pool = require('../db'); // PostgreSQL pool
 const bcrypt = require('bcryptjs');
+const operatorController = require('../controllers/operatorController');
 
-// POST /api/operator/register
-router.post('/register', upload.array('documents'), async (req, res) => {
+// ✅ Commented this out because you defined the same POST route below
+// router.post('/register', upload.single('aadhaarFile'), operatorController.register);
+
+// ✅ Use array for multiple files, including Aadhaar and other docs
+router.post('/register', upload.fields([
+  { name: 'aadhaarFile', maxCount: 1 },
+  { name: 'documents', maxCount: 10 }
+]), async (req, res) => {
   try {
     const {
       name,
@@ -29,11 +36,21 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       confirmPassword
     } = req.body;
 
-    const documents = req.files.map(file => file.filename).join(',');
+    const allDocs = [];
+
+    if (req.files['aadhaarFile']) {
+      allDocs.push(req.files['aadhaarFile'][0].filename);
+    }
+
+    if (req.files['documents']) {
+      req.files['documents'].forEach(file => allDocs.push(file.filename));
+    }
+
+    const documents = allDocs.join(',');
 
     const safe = (v) => (v === undefined || v === '' ? null : v);
 
-    // ✅ Check if operator already exists (PostgreSQL uses $1)
+    // ✅ Check if operator already exists
     const checkQuery = 'SELECT 1 FROM truck_operators WHERE mobile = $1 LIMIT 1';
     const result = await pool.query(checkQuery, [safe(phone)]);
 
@@ -41,15 +58,13 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       return res.status(400).json({ message: 'Mobile number already registered' });
     }
 
-    // ✅ Check if passwords match
+    // ✅ Check password
     if (!password || !confirmPassword || password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match or missing' });
     }
 
-    // ✅ Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Insert new operator
     const insertQuery = `
       INSERT INTO truck_operators (
         first_name, last_name, email, mobile, dob, number_of_trucks, address,
@@ -77,5 +92,3 @@ router.post('/register', upload.array('documents'), async (req, res) => {
 });
 
 module.exports = router;
-
-

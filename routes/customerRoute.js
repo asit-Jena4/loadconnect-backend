@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../upload');
+
 const pool = require('../db'); // PostgreSQL pool
 const bcrypt = require('bcryptjs');
+const upload = require('../middlewares/uploads');
+const customerController = require('../controllers/customerController');
+
+// Aadhaar upload + required Aadhaar/PAN
+router.post('/register', upload.single('aadhaarFile'), customerController.register);
+
 
 router.post('/register', upload.array('documents'), async (req, res) => {
   try {
