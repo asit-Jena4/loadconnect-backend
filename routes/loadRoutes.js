@@ -6,57 +6,55 @@ const pool = require('../db'); // PostgreSQL connection
 
 router.post('/post', async (req, res) => {
   try {
-    const data = req.body;
-
-    let insertQuery = '';
+    const d = req.body;
+    let query = '';
     let values = [];
 
-    if (data.loadType === 'full') {
-      insertQuery = `
+    if (d.load_type === 'full') {
+      query = `
         INSERT INTO loads (
           load_type, source_city, destination_city, material_type, weight,
           truck_type, number_of_trucks, scheduled_date
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `;
       values = [
-        'full',
-        data.sourceCity,
-        data.destinationCity,
-        data.material,
-        data.weight,
-        data.truckType,
-        data.numTrucks,        // ✅ matches number_of_trucks
-        data.scheduledDate
+        d.load_type,
+        d.source_city,
+        d.destination_city,
+        d.material_type,
+        d.weight,
+        d.truck_type,
+        d.number_of_trucks,
+        d.scheduled_date
       ];
-    } else if (data.loadType === 'part') {
-      insertQuery = `
+    } else if (d.load_type === 'part') {
+      query = `
         INSERT INTO loads (
           load_type, source_city, destination_city, source_pin_code, destination_pin_code,
           pickup_type, material_type, weight, pickup_date
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `;
       values = [
-        'part',
-        data.sourceCity2,
-        data.destinationCity2,
-        data.sourcePinCode || null,
-        data.destinationPinCode || null,
-        data.pickupType,
-        data.material2,
-        data.weight2,
-        data.pickupDate
+        d.load_type,
+        d.source_city,
+        d.destination_city,
+        d.source_pin_code,
+        d.destination_pin_code,
+        d.pickup_type,
+        d.material_type,
+        d.weight,
+        d.pickup_date
       ];
     }
 
-    await pool.query(insertQuery, values);
+    await pool.query(query, values);
+    res.json({ success: true, message: "Load inserted" });
 
-    res.json({ success: true, message: '✅ Load posted successfully!' });
   } catch (err) {
-    console.error('🔥 Load post error:', err);
-    res.status(500).json({ success: false, error: 'Database error.' });
+    console.error("🔥 Load insert error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
   }
 });
+
 
 module.exports = router;
