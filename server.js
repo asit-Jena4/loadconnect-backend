@@ -16,21 +16,11 @@ const pool = new Pool({
 });
 
 // ✅ Middlewares
-const allowedOrigins = [
-  'http://127.0.0.1:5500',
-  'https://loadconnectiitcapston.netlify.app'
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: '*',
   credentials: true
 }));
+
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
