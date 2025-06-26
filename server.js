@@ -16,10 +16,28 @@ const pool = new Pool({
 });
 
 // ✅ Middlewares
+const cors = require('cors');
+
+// ✅ Allow both local and Netlify frontend
+const allowedOrigins = [
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'https://loadconnectiitcapston.netlify.app'
+];
+
 app.use(cors({
-  origin: '*',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error('❌ CORS blocked for origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
+
 
 
 app.use(express.json());
