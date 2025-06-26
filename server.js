@@ -16,11 +16,10 @@ const pool = new Pool({
 });
 
 // ✅ Middlewares
-app.use((req, res, next) => {
-  console.log("🛰️ CORS Request Origin:", req.headers.origin);
-  next();
-});
-
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 
 
 app.use(express.json());
