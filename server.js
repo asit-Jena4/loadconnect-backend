@@ -17,9 +17,10 @@ const pool = new Pool({
 
 // ✅ Middlewares
 const allowedOrigins = [
-  'http://127.0.0.1:5500',
-  'http://127.0.0.1:3000',
-  'https://loadconnectx78.netlify.app/'
+  'http://127.0.0.1:5500',                       // local test (HTML)
+  'http://127.0.0.1:3000',                       // local React
+  'https://loadconnectiitcapston.netlify.app',  // your deployed frontend
+  'https://heroic-speculoos-eb8f45.netlify.app' // your alternate Netlify domain
 ];
 
 app.use(cors({
