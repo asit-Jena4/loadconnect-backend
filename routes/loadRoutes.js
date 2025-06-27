@@ -1,9 +1,8 @@
-// routes/loadRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const pool = require('../db'); // PostgreSQL connection
 
+// POST /api/load/post
 router.post('/post', async (req, res) => {
   try {
     const d = req.body;
@@ -56,5 +55,21 @@ router.post('/post', async (req, res) => {
   }
 });
 
+// ✅ GET /api/load/recent
+router.get('/recent', async (req, res) => {
+  try {
+    const query = `
+      SELECT *
+      FROM loads
+      ORDER BY created_at DESC
+      LIMIT 5
+    `;
+    const { rows } = await pool.query(query);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("🔥 Error fetching recent loads:", err);
+    res.status(500).json({ success: false, error: "Could not fetch recent loads" });
+  }
+});
 
 module.exports = router;
