@@ -126,8 +126,7 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: `${user.first_name} ${user.last_name}`.trim(),
-
+        name: user.first_name || user.username,
         phone: user.mobile,
         user_type
       }

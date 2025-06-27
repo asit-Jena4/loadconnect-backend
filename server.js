@@ -26,7 +26,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS: ' + origin));
     }
   },
   credentials: true
@@ -60,12 +60,14 @@ app.get('/api', (req, res) => {
       registerOperator: "POST /api/operator/register",
       registerCustomer: "POST /api/customer/register",
       postLoad: "POST /api/load/post",
-      searchLoad: "GET /api/load/search"
+      searchLoad: "GET /api/load/search",
+      quotation: "GET|POST /api/quotation",
+      booking: "GET|POST /api/booking"
     }
   });
 });
 
-// ✅ Load APIs (PostgreSQL adjusted)
+// ✅ Load APIs
 app.get('/api/loads', async (req, res) => {
   try {
     const { status, source_city, destination_city } = req.query;
@@ -73,15 +75,15 @@ app.get('/api/loads', async (req, res) => {
     const params = [];
 
     if (status) {
-      query += ' AND status = $' + (params.length + 1);
+      query += ` AND status = $${params.length + 1}`;
       params.push(status);
     }
     if (source_city) {
-      query += ' AND source_city ILIKE $' + (params.length + 1);
+      query += ` AND source_city ILIKE $${params.length + 1}`;
       params.push(`%${source_city}%`);
     }
     if (destination_city) {
-      query += ' AND destination_city ILIKE $' + (params.length + 1);
+      query += ` AND destination_city ILIKE $${params.length + 1}`;
       params.push(`%${destination_city}%`);
     }
 
@@ -94,13 +96,10 @@ app.get('/api/loads', async (req, res) => {
 
 app.get('/api/loads/:id', async (req, res) => {
   try {
-    const loadId = parseInt(req.params.id);
-    const result = await pool.query('SELECT * FROM loads WHERE id = $1', [loadId]);
-
+    const result = await pool.query('SELECT * FROM loads WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Load not found' });
     }
-
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Failed to get load' });
@@ -122,7 +121,8 @@ app.post('/api/loads', async (req, res) => {
         source_city, source_state, destination_city, destination_state,
         distance, weight, scheduled_date,
         material_type, truck_type, description, price, posted_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING id
     `;
 
     const result = await pool.query(query, [
@@ -147,12 +147,10 @@ const operatorRoutes = require('./routes/operatorRoutes');
 const customerRoutes = require('./routes/customerRoute');
 const loadRoutes = require('./routes/loadRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
-console.log("✅ trackingRoutes loaded");
 const quotationRoutes = require('./routes/quotationRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 
-
-
+console.log("✅ All routes loaded");
 
 // ✅ Register Routes
 app.use('/api/auth', authRoutes);
@@ -162,29 +160,15 @@ app.use('/api/load', loadRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/quotation', quotationRoutes);
 app.use('/api/booking', bookingRoutes);
+
 app.use('/gps', express.static(path.join(__dirname, 'gps')));
 app.use('/pay', express.static(path.join(__dirname, 'public')));
 
+// ✅ Catch-All Route
 app.use('*', (req, res) => {
   res.status(404).json({
     error: "Route not found",
-    availableEndpoints: [
-      "GET /health",
-      "GET /api",
-      "GET /api/loads",
-      "GET /api/loads/:id",
-      "POST /api/loads",
-      "POST /api/auth/login",
-      "POST /api/operator/register",
-      "POST /api/customer/register",
-      "POST /api/load/post",
-      "GET /api/load/search",
-      "POST /api/tracking/update",
-      "GET /api/tracking/:truck_id",
-      "GET /gps/map.html",
-      "GET /gps/route.html",
-      "GET /gps/payment.html"
-    ]
+    suggestion: "Check /api for available endpoints"
   });
 });
 
