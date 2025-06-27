@@ -148,6 +148,11 @@ const customerRoutes = require('./routes/customerRoute');
 const loadRoutes = require('./routes/loadRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
 console.log("✅ trackingRoutes loaded");
+const quotationRoutes = require('./routes/quotationRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+
+
+
 
 // ✅ Register Routes
 app.use('/api/auth', authRoutes);
@@ -155,7 +160,8 @@ app.use('/api/operator', operatorRoutes);
 app.use('/api/customer', customerRoutes);
 app.use('/api/load', loadRoutes);
 app.use('/api/tracking', trackingRoutes);
-
+app.use('/api/quotation', quotationRoutes);
+app.use('/api/booking', bookingRoutes);
 app.use('/gps', express.static(path.join(__dirname, 'gps')));
 app.use('/pay', express.static(path.join(__dirname, 'public')));
 
