@@ -18,7 +18,8 @@ const pool = new Pool({
 // ✅ Middlewares
 const allowedOrigins = [
   'http://127.0.0.1:5500',
-  'https://loadconnectiitcapston.netlify.app'
+  'http://127.0.0.1:3000',
+  'https://loadconnectx78.netlify.app/'
 ];
 
 app.use(cors({
