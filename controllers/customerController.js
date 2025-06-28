@@ -1,47 +1,96 @@
+// ✅ controllers/customerController.js
+
+const pool = require('../db');
+const bcrypt = require('bcryptjs');
 const {
   isValidAadhaar,
   isValidPAN,
   isValidGST
 } = require('../utils/validate');
-const pool = require('../db'); // ✅ only if your db.js is in root folder
-
 
 const register = async (req, res) => {
   const {
-    first_name, last_name,
-    aadhaar_number, pan_number, gst_number
+    name,
+    lastName,
+    phone,
+    dob,
+    address,
+    country,
+    pincode,
+    district,
+    state,
+    city,
+    panNo,
+    gstNo,
+    aadharNo,
+    detailCollection,
+    password,
+    confirmPassword
   } = req.body;
 
-  const aadhaarFile = req.file?.path;
+  const aadhaarFile = req.file?.filename;
+  const safe = (v) => (v === undefined || v === '' ? null : v);
 
-  // ✅ Mandatory Checks
-  if (!aadhaar_number || !isValidAadhaar(aadhaar_number)) {
-    return res.status(400).json({ message: 'Valid Aadhaar number is required' });
+  if (!aadharNo || !isValidAadhaar(aadharNo)) {
+    return res.status(400).json({ success: false, message: 'Valid Aadhaar number is required' });
   }
 
   if (!aadhaarFile) {
-    return res.status(400).json({ message: 'Aadhaar document is required (PDF/JPG)' });
+    return res.status(400).json({ success: false, message: 'Aadhaar document is required (PDF/JPG)' });
   }
 
-  if (!pan_number || !isValidPAN(pan_number)) {
-    return res.status(400).json({ message: 'Valid PAN number is required' });
+  if (!panNo || !isValidPAN(panNo)) {
+    return res.status(400).json({ success: false, message: 'Valid PAN number is required' });
   }
 
-  if (gst_number && !isValidGST(gst_number)) {
-    return res.status(400).json({ message: 'Invalid GST number' });
+  if (gstNo && !isValidGST(gstNo)) {
+    return res.status(400).json({ success: false, message: 'Invalid GST number' });
+  }
+
+  if (!password || !confirmPassword || password !== confirmPassword) {
+    return res.status(400).json({ success: false, message: 'Passwords do not match or are missing' });
   }
 
   try {
-    await pool.query(`
-      INSERT INTO customers 
-      (first_name, last_name, aadhaar_number, pan_number, gst_number, aadhaar_file)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [first_name, last_name, aadhaar_number, pan_number, gst_number || null, aadhaarFile]);
+    // Check mobile number duplicate
+    const existing = await pool.query(
+      'SELECT 1 FROM customers WHERE mobile = $1 LIMIT 1',
+      [safe(phone)]
+    );
 
-    return res.status(201).json({ message: 'Customer registered successfully' });
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ success: false, message: 'Mobile number already registered' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql = `
+      INSERT INTO customers (
+        first_name, last_name, mobile, dob, address, country,
+        pincode, district, state, city,
+        pan_number, gst_number, aadhaar_number,
+        detail_collection, documents, password
+      ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, $8, $9, $10,
+        $11, $12, $13, $14, $15, $16
+      )
+    `;
+
+    const values = [
+      safe(name), safe(lastName), safe(phone), safe(dob),
+      safe(address), safe(country), safe(pincode), safe(district),
+      safe(state), safe(city), safe(panNo), safe(gstNo),
+      safe(aadharNo), safe(detailCollection), safe(aadhaarFile), hashedPassword
+    ];
+
+    await pool.query(sql, values);
+
+    return res.status(201).json({ success: true, message: 'Customer registered successfully' });
+
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Database error' });
+    console.error('🔥 Customer registration error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during registration' });
   }
 };
 

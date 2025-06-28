@@ -1,16 +1,14 @@
+// ✅ FINAL customerRoutes.js (Cleaned and Working)
+
 const express = require('express');
 const router = express.Router();
 
 const pool = require('../db'); // PostgreSQL pool
 const bcrypt = require('bcryptjs');
 const upload = require('../middlewares/uploads');
-const customerController = require('../controllers/customerController');
 
-// Aadhaar upload + required Aadhaar/PAN
-router.post('/register', upload.single('aadhaarFile'), customerController.register);
-
-
-router.post('/register', upload.array('documents'), async (req, res) => {
+// ✅ Register Customer with Aadhaar Upload
+router.post('/register', upload.single('aadhaarFile'), async (req, res) => {
   try {
     const {
       name,
@@ -31,22 +29,26 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       confirmPassword
     } = req.body;
 
-    const documents = req.files.map(file => file.filename).join(',');
+    const aadhaarFile = req.file ? req.file.filename : null;
     const safe = (v) => (v === undefined || v === '' ? null : v);
 
-    // Check if mobile already exists
+    // ✅ Validation
+    if (!aadharNo || !/^\d{12}$/.test(aadharNo)) {
+      return res.status(400).json({ success: false, message: 'Valid Aadhaar number is required' });
+    }
+
+    if (!password || !confirmPassword || password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Passwords do not match or missing' });
+    }
+
+    // ✅ Check if mobile already exists
     const existing = await pool.query(
       'SELECT 1 FROM customers WHERE mobile = $1 LIMIT 1',
       [safe(phone)]
     );
 
     if (existing.rows.length > 0) {
-      return res.status(400).json({ message: 'Mobile number already registered' });
-    }
-
-    // ✅ Password match check
-    if (!password || !confirmPassword || password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match or missing' });
+      return res.status(400).json({ success: false, message: 'Mobile number already registered' });
     }
 
     // ✅ Hash password
@@ -69,15 +71,16 @@ router.post('/register', upload.array('documents'), async (req, res) => {
       safe(name), safe(lastName), safe(phone), safe(dob),
       safe(address), safe(country), safe(pincode), safe(district),
       safe(state), safe(city), safe(panNo), safe(gstNo),
-      safe(aadharNo), safe(detailCollection), safe(documents), hashedPassword
+      safe(aadharNo), safe(detailCollection), safe(aadhaarFile), hashedPassword
     ];
 
     await pool.query(sql, values);
+
     res.status(201).json({ success: true, message: 'Customer registered successfully' });
 
   } catch (err) {
     console.error('🔥 Customer registration error:', err);
-    res.status(500).json({ error: 'Server error during registration' });
+    res.status(500).json({ success: false, error: 'Server error during registration' });
   }
 });
 
