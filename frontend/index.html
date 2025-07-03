@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    body {
+        background-image: url(background\ of\ loadconnect.jpg);
+        margin-bottom: 20%;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+
+    /* Navbar Auth Section */
+    .navbar-auth {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: flex-end;
+        margin-right: 1.5rem;
+    }
+
+    .navbar-auth li {
+        list-style: none;
+    }
+
+    .navbar-auth a {
+        text-decoration: none;
+        color: #000;
+        font-weight: 500;
+    }
+
+    #user-info {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+</style>
+
+
+<body>
+    <header>
+        <nav>
+            <div class="left">
+                <img src="modern Logistic logo pro.PNG" alt="Loadconncet Logo" class="square-logo " />
+                <span class="logo-txt"></span>
+            </div>
+
+            <div class="left">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blogs</a></li>
+                    <li><a href="contact.html">Contact us</a></li>
+                    <!-- <li id="nav-my-quotes"><a href="my-quotes.html">My Quotes</a></li>
+                    <li id="nav-operator-quotes"><a href="operator-quotes.html">Quotations</a></li> -->
+                </ul>
+            </div>
+
+            <div class="right">
+                <ul>
+                    <li id="user-info" style="display: none;">
+                        👤 <span id="username-display">User</span>
+                    </li>
+                    <li id="logout-link" style="display: none;">
+                        <a href="#" onclick="logoutUser()">🚪 Logout</a>
+                    </li>
+                    <li id="login-link">
+                        <a href="Login.html">
+                            <img src="sign-in-alt (1).png" alt="Login Icon" class="Login-Icon">Login
+                        </a>
+                    </li>
+                    <li id="register-link">
+                        <a href="register.html">
+                            <img src="user (1).png" alt="Register Icon" class="icon-register">Free Register
+                        </a>
+                    </li>
+                </ul>
+
+
+            </div>
+
+        </nav>
+
+    </header>
+    <!-- this is the main section  -->
+    <main>
+        <div class="form-container">
+            <div class="form-header">
+                POST YOUR LOAD DETAIL
+            </div>
+
+            <form id="loadForm">
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="fullLoad" name="loadType" value="full" checked>
+                        <label for="fullLoad">Full Load<br><small>(Above 3MT)</small></label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="partLoad" name="loadType" value="part">
+                        <label for="partLoad">Part Load<br><small>(Below 3MT)</small></label>
+                    </div>
+                </div>
+
+                <!-- Full Load Fields -->
+                <div class="form-grid" id="fullLoadFields">
+                    <div class="form-group">
+                        <label for="sourceCity">From <span class="required">*</span></label>
+                        <input type="text" id="sourceCity" name="sourceCity" placeholder="Source City" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinationCity">To <span class="required">*</span></label>
+                        <input type="text" id="destinationCity" name="destinationCity" placeholder="Destination City"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="material">Material <span class="required">*</span></label>
+                        <select id="material" name="material" required>
+                            <option value="">Select</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="machinery">Machinery</option>
+                            <option value="textiles">Textiles</option>
+                            <option value="food">Food Items</option>
+                            <option value="chemicals">Chemicals</option>
+                            <option value="construction">Construction Materials</option>
+                            <option value="automotive">Automotive Parts</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Weight (MT) <span class="required">*</span></label>
+                        <select id="weight" name="weight" required>
+                            <option value="">Select</option>
+                            <option value="3-5">3-5 MT</option>
+                            <option value="5-10">5-10 MT</option>
+                            <option value="10-20">10-20 MT</option>
+                            <option value="20-30">20-30 MT</option>
+                            <option value="30+">30+ MT</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="truckType">Truck Type <span class="required">*</span></label>
+                        <select id="truckType" name="truckType" required>
+                            <option value="">Select</option>
+                            <option value="open">Open Truck</option>
+                            <option value="closed">Closed Truck</option>
+                            <option value="container">Container</option>
+                            <option value="trailer">Trailer</option>
+                            <option value="tanker">Tanker</option>
+                            <option value="refrigerated">Refrigerated</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numTrucks">No. of Trucks <span class="required">*</span></label>
+                        <select id="numTrucks" name="numTrucks" required>
+                            <option value="">Select</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="5+">5+</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="scheduledDate">Scheduled Date <span class="required">*</span></label>
+                        <div class="date-wrapper">
+                            <input type="date" id="scheduledDate" name="scheduledDate" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Part Load Fields -->
+                <div class="form-grid" id="partLoadFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="sourceCity2">From <span class="required">*</span></label>
+                        <input type="text" id="sourceCity2" name="sourceCity2" placeholder="Source City">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinationCity2">To <span class="required">*</span></label>
+                        <input type="text" id="destinationCity2" name="destinationCity2" placeholder="Destination City">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sourcePinCode">Source Pin Code</label>
+                        <input type="text" id="sourcePinCode" name="sourcePinCode" placeholder="From Pin Code"
+                            maxlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinationPinCode">Destination Pin Code</label>
+                        <input type="text" id="destinationPinCode" name="destinationPinCode"
+                            placeholder="Destination Pin Code" maxlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pickupType">Pick up Type <span class="required">*</span></label>
+                        <select id="pickupType" name="pickupType">
+                            <option value="">Select</option>
+                            <option value="door-pickup">Door Pickup</option>
+                            <option value="godown-pickup">Godown Pickup</option>
+                            <option value="warehouse-pickup">Warehouse Pickup</option>
+                            <option value="factory-pickup">Factory Pickup</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="material2">Material <span class="required">*</span></label>
+                        <select id="material2" name="material2">
+                            <option value="">Select</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="machinery">Machinery</option>
+                            <option value="textiles">Textiles</option>
+                            <option value="food">Food Items</option>
+                            <option value="chemicals">Chemicals</option>
+                            <option value="construction">Construction Materials</option>
+                            <option value="automotive">Automotive Parts</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight2">Weight (MT) <span class="required">*</span></label>
+                        <select id="weight2" name="weight2">
+                            <option value="">Select</option>
+                            <option value="0.5-1">0.5-1 MT</option>
+                            <option value="1-1.5">1-1.5 MT</option>
+                            <option value="1.5-2">1.5-2 MT</option>
+                            <option value="2-2.5">2-2.5 MT</option>
+                            <option value="2.5-3">2.5-3 MT</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pickupDate">Pick up Date <span class="required">*</span></label>
+                        <div class="date-wrapper">
+                            <input type="date" id="pickupDate" name="pickupDate">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-load">Submit</button>
+            </form>
+        </div>
+        <div class="home-right">
+            <video autoplay loop muted playsinline width="100%">
+                <source src="loadconnect video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <div class="home-left">
+            <h1>Welcome to Load<span class="highlight-red">Connect</span></h1>
+            <p>Your Smart Logistics Companion</p>
+            <p>LoadConnect is a digital logistics platform designed to revolutionize transportation across rural and
+                urban India. We connect vehicle owners, rural producers, and urban buyers to eliminate empty return
+                trips, reduce fuel waste, and boost earnings. With real-time tracking, easy load booking, and digital
+                payments, LoadConnect makes logistics smarter, greener, and more efficient for everyone.</p>
+        </div>
+        <div>
+            <button type="submit" class="view-details"><a href="about.html">Veiw Details</a></button>
+        </div>
+        <div class="table-container">
+            <h2>Recent Load/<span class="highlight-red">Booking</span></h2>
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Recently Posted Loads</h2>
+                    <a href="#" class="view-all-btn">View all load posts</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Source City</th>
+                            <th>Destination City</th>
+                            <th>Distance</th>
+                            <th>Weight (MT)</th>
+                            <th>Schd. Date</th>
+                            <th>Material</th>
+                            <th>Truck Type</th>
+                            <th>Posted By</th>
+                            <th>Details</th>
+                            <th>Quotation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-loads-body">
+                        <!-- Rows will be injected by JavaScript -->
+                    </tbody>
+                </table>
+
+                <!-- ✅ Add your script before closing body -->
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                        document.querySelectorAll('.quote-btn').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const loadId = btn.closest('tr').dataset.loadId;
+                                const customer = JSON.parse(localStorage.getItem("loadconnectUser"));
+                                const price = prompt("Enter your quote price:");
+                                const message = prompt("Optional message to operator:");
+
+                                if (price && customer && customer.role === 'customer') {
+                                    fetch('https://loadconnect-backend-1.onrender.com/api/quotation', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            load_id: loadId,
+                                            customer_id: customer.id,
+                                            price,
+                                            message
+                                        })
+                                    })
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.success) alert("✅ Quote submitted!");
+                                            else alert("❌ Failed to quote.");
+                                        });
+                                } else {
+                                    alert("🚫 You must be logged in as a customer to quote.");
+                                }
+                            });
+                        });
+                    });
+                </script>
+
+
+            </div>
+        </div>
+
+
+    </main>
+    <script src="load-post.js"></script>
+    <!-- and this is the footer section -->
+
+
+
+
+
+    <footer>
+        <div class="footer">
+            <div class="footer-first">
+                <h2>Load<span class="highlight-red">Connect</span></h2>
+                <img src="final logo Loadconnct.png" alt="LoadConnect">
+            </div>
+            <!-- coloumn -----1 -->
+            <div class="footer-column">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blog</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <ul>
+                    <li><a href="Login.html">Log-in</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="contact-info">
+                <h3>contact-info</h3>
+                <p><a href="mailto:loadconnectx78@gmail.com">🔗loadconnectx78@gmail.com</a></p>
+                <p> <a href="tel:+91 9153692861">📞9153692861</a>
+                    /
+                    <a href="tel:+91 8210973690">8210973690</a>
+                    <a href="tel:+91 9114552303">9114552303</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer-rights">
+            Copyright &#169; loadconnectx78.netlify.app | All rights reserved || 2025
+        </div>
+    </footer>
+    <!-- ✅ Login script at very bottom -->
+    <script>
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('loadconnectUser'));
+            console.log("✅ User object from localStorage:", user);
+
+            const loginLink = document.getElementById('login-link');
+            const registerLink = document.getElementById('register-link');
+            const userInfo = document.getElementById('user-info');
+            const usernameDisplay = document.getElementById('username-display');
+            const logoutLink = document.getElementById('logout-link');
+
+            if (user) {
+                if (loginLink) loginLink.style.display = 'none';
+                if (registerLink) registerLink.style.display = 'none';
+
+                if (userInfo && usernameDisplay) {
+                    userInfo.style.display = 'inline-block';
+                    usernameDisplay.textContent = `Welcome, ${user.name}`;
+                }
+
+                if (logoutLink) logoutLink.style.display = 'inline-block';
+            }
+        });
+
+        function logoutUser() {
+            localStorage.removeItem('loadconnectUser');
+            localStorage.removeItem('token');
+            alert("✅ Logged out successfully");
+            window.location.href = 'index.html';
+        }
+    </script>
+
+
+</body>
+
+</html>

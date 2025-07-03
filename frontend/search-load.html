@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Search Loads - LoadConnect</title>
+  <style>
+    /* 🔹 Unique blurred gradient background */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #dbeafe, #ffffff);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.3;
+      animation: float 15s infinite ease-in-out alternate;
+    }
+
+    .blob1 {
+      top: -100px;
+      left: -100px;
+      width: 300px;
+      height: 300px;
+      background: #3b82f6;
+    }
+
+    .blob2 {
+      bottom: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: #f87171;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(40px); }
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 80px auto;
+      padding: 35px;
+      background-color: rgba(255, 255, 255, 0.92);
+      border-radius: 14px;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 1;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 30px;
+      font-size: 1.9rem;
+      font-weight: bold;
+    }
+
+    form input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      transition: 0.3s;
+      font-size: 15px;
+    }
+
+    form input:focus {
+      border-color: #1e40af;
+      box-shadow: 0 0 8px rgba(30, 64, 175, 0.25);
+      outline: none;
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(to right, #ff5e5e, #ff7373);
+      color: white;
+      padding: 13px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background: #e94848;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(255, 94, 94, 0.4);
+    }
+
+    #results {
+      margin-top: 35px;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .result-card {
+      background-color: #eff6ff;
+      padding: 15px 20px;
+      margin-bottom: 18px;
+      border-radius: 10px;
+      border-left: 6px solid #2563eb;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .result-card:hover {
+      transform: scale(1.02);
+      background-color: #e0f2fe;
+    }
+
+    .no-result {
+      text-align: center;
+      color: crimson;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background animated blobs -->
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <h2>🔍 Search Available Loads</h2>
+
+    <form id="searchForm">
+      <input name="source_city" placeholder="Source City">
+      <input name="destination_city" placeholder="Destination City">
+      <input name="truck_type" placeholder="Truck Type">
+      <input name="material_type" placeholder="Material Type">
+      <input name="load_type" placeholder="Load Type (Full/Part)">
+      <button type="submit">Search</button>
+    </form>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const params = new URLSearchParams(formData).toString();
+
+      const res = await fetch('https://loadconnect-backend.onrender.com/api/load/search?' + params);
+      const data = await res.json();
+
+      const output = document.getElementById('results');
+      if (!data.success || data.count === 0) {
+        output.innerHTML = '<p class="no-result">❌ No matching loads found.</p>';
+        return;
+      }
+
+      output.innerHTML = '<h3>✅ Matching Loads:</h3>' + data.data.map(load => `
+        <div class="result-card">
+          <strong>${load.source_city} ➡ ${load.destination_city}</strong><br>
+          <span>${load.truck_type} | ${load.material_type} | ${load.weight} kg | Load Type: ${load.load_type}</span>
+        </div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>
+

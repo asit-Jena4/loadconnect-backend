@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Route Optimization - LoadConnect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet & Routing CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css" />
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+    }
+
+    h2 {
+      text-align: center;
+      color: #003366;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input, button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    input {
+      width: 240px;
+    }
+
+    button {
+      background-color: #0077b6;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005999;
+      transform: scale(1.05);
+    }
+
+    #map {
+      height: 75vh;
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #0077b6;
+    }
+
+    #message {
+      text-align: center;
+      font-size: 15px;
+      color: green;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🧭 Optimize Your Route Instantly</h2>
+
+  <div class="form-container">
+    <input type="text" id="source" placeholder="Source (e.g. Kolkata)" />
+    <input type="text" id="destination" placeholder="Destination (e.g. Bhubaneswar)" />
+    <button onclick="showRoute()">Show Route</button>
+  </div>
+
+  <p id="message"></p>
+
+  <div id="map"></div>
+
+  <!-- JS Libraries -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+  <script src="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.js"></script>
+
+  <script>
+    const map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+    let control;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    async function geocode(city) {
+      const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${encodeURIComponent(city)}&f=json`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.candidates && data.candidates.length > 0) {
+        const { x, y } = data.candidates[0].location;
+        return [y, x]; // Return [lat, lng]
+      } else {
+        throw new Error(`❌ Location "${city}" not found.`);
+      }
+    }
+
+    async function showRoute() {
+      const source = document.getElementById('source').value.trim();
+      const destination = document.getElementById('destination').value.trim();
+      const msg = document.getElementById('message');
+
+      msg.style.color = 'green';
+      msg.innerText = "";
+
+      if (!source || !destination) {
+        msg.style.color = 'red';
+        msg.innerText = "⚠️ Please enter both source and destination.";
+        return;
+      }
+
+      try {
+        const fromLatLng = await geocode(source);
+        const toLatLng = await geocode(destination);
+
+        if (control) map.removeControl(control); // Clear previous route
+
+        control = L.Routing.control({
+          waypoints: [
+            L.latLng(...fromLatLng),
+            L.latLng(...toLatLng)
+          ],
+          routeWhileDragging: false
+        }).addTo(map);
+
+        msg.innerText = `✅ Route loaded from ${source} to ${destination}`;
+
+        // 🔗 Optional: Log route to backend
+        await fetch("https://loadconnect-backend.onrender.com/api/route/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source,
+            destination,
+            user_id: localStorage.getItem("userId") || null
+          })
+        });
+
+      } catch (err) {
+        console.error(err);
+        msg.style.color = 'red';
+        msg.innerText = err.message || "❌ Something went wrong.";
+      }
+    }
+  </script>
+
+</body>
+</html>
+

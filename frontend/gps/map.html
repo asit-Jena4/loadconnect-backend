@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Track Your Truck Now - LoadConnect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #fff3e0, #fce4ec);
+      background-size: 400% 400%;
+      animation: backgroundFlow 14s ease infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    @keyframes backgroundFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .tracker-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 14px;
+      border: 3px solid #0077b6;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1100px;
+      animation: fadeInUp 1s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      text-align: center;
+      color: #003366;
+      margin-bottom: 25px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    input {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      font-size: 16px;
+      min-width: 250px;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      border-color: #0077b6;
+      box-shadow: 0 0 10px rgba(0, 119, 182, 0.2);
+      outline: none;
+    }
+
+    button {
+      background: linear-gradient(to right, #0077b6, #00c6ff);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #005999;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 119, 182, 0.4);
+    }
+
+    #status {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 20px;
+      transition: 0.3s;
+    }
+
+    #status.error {
+      color: #ff5e5e;
+    }
+
+    #status.success {
+      color: #0077b6;
+    }
+
+    #map {
+      height: 70vh;
+      width: 100%;
+      border-radius: 12px;
+      border: 3px solid #003366;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tracker-container">
+    <h2>🚚 Track Your Truck Now</h2>
+
+    <div class="search-box">
+      <input type="text" id="truckId" placeholder="Enter Truck ID (e.g. TRK123)" />
+      <button onclick="loadLocation()">🔍 Track Truck</button>
+    </div>
+
+    <p id="status">🕐 Waiting for Truck ID...</p>
+
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map;
+    let marker = null;
+    let trailLine = null;
+
+    window.onload = function () {
+      map = L.map('map').setView([20.5937, 78.9629], 5);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+      }).addTo(map);
+
+      setInterval(() => {
+        const truckId = document.getElementById('truckId').value.trim();
+        if (truckId) {
+          loadLocation(truckId);
+        }
+      }, 10000);
+    };
+
+    async function loadLocation(truckIdFromInput = null) {
+      const truckId = truckIdFromInput || document.getElementById('truckId').value.trim();
+      const status = document.getElementById('status');
+      status.className = "";
+
+      if (!truckId) {
+        status.innerText = "⚠️ Please enter a Truck ID.";
+        status.classList.add('error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://loadconnect-backend.onrender.com/api/tracking/${truckId}`);
+        const data = await res.json();
+
+        if (data.success && data.location) {
+          const { latitude, longitude } = data.location;
+
+          const customIcon = L.divIcon({
+            className: 'custom-truck-icon',
+            html: '🚛',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+
+          if (marker !== null) {
+            marker.setLatLng([latitude, longitude]);
+          } else {
+            marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(map);
+          }
+
+          map.setView([latitude, longitude], 13);
+          status.innerText = `✅ Truck ${truckId} is at [${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)}]`;
+          status.classList.add('success');
+
+          await loadTrail(truckId);
+        } else {
+          status.innerText = "❌ Truck not found.";
+          status.classList.add('error');
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        status.innerText = "❌ Failed to fetch location.";
+        status.classList.add('error');
+      }
+    }
+
+    async function loadTrail(truckId) {
+      try {
+        const res = await fetch(`https://loadconnect-backend.onrender.com/api/tracking/history/${truckId}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const trailCoords = data.trail.map(point => [Number(point.latitude), Number(point.longitude)]);
+
+          if (trailLine) {
+            map.removeLayer(trailLine);
+          }
+
+          trailLine = L.polyline(trailCoords, { color: '#0077b6' }).addTo(map);
+        }
+      } catch (err) {
+        console.error('Trail fetch error:', err);
+      }
+    }
+  </script>
+
+</body>
+</html>
+
+

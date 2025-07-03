@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QR Code Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(to right, #fce4ec, #e0f7fa);
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    canvas {
+      margin-top: 1rem;
+    }
+    #upiLink {
+      font-size: 14px;
+      color: #444;
+      margin-top: 1rem;
+      word-break: break-word;
+    }
+    #confirmBtn {
+      display: none;
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    #thankYou {
+      font-size: 18px;
+      font-weight: bold;
+      color: green;
+      margin-top: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>🧾 Pay via UPI QR Code</h2>
+
+  <label>Enter Amount (₹):</label><br />
+  <input type="number" id="amount" placeholder="Amount (e.g. 150)" /><br />
+  <button onclick="generateQR()">Generate QR</button>
+
+  <canvas id="qrcode"></canvas>
+  <p id="upiLink"></p>
+
+  <button id="confirmBtn" onclick="markAsPaid()">✅ I Have Paid</button>
+  <p id="thankYou">✅ Payment confirmed. Thank you for your trust!</p>
+
+  <script>
+    function generateQR() {
+      const amount = document.getElementById("amount").value.trim();
+      const upiId = "9114552303@ybl";
+      const name = "Asit kumar jena";
+
+      if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+
+      QRCode.toCanvas(document.getElementById("qrcode"), upiUrl, function (error) {
+        if (error) {
+          console.error("❌ QR Code Error:", error);
+          alert("Failed to generate QR code.");
+        } else {
+          document.getElementById("upiLink").textContent = upiUrl;
+          document.getElementById("confirmBtn").style.display = "inline-block";
+          document.getElementById("thankYou").style.display = "none";
+        }
+      });
+    }
+
+    function markAsPaid() {
+      document.getElementById("thankYou").style.display = "block";
+      document.getElementById("confirmBtn").style.display = "none";
+    }
+  </script>
+</body>
+</html>
+

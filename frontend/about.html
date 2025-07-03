@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="left">
+                <img src="final logo Loadconnct.png" alt="Loadconncet Logo" class="square-logo " />
+                <span class="logo-txt"></span>
+            </div>
+            <div class="left">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blogs</a></li>
+                    <li><a href="contact.html">Contact us</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="right">
+                    <ul class="navbar-auth">
+                        <li id="user-info" style="display: none;">
+                            👤 <span id="username-display">User</span>
+                        </li>
+                        <li id="logout-link" style="display: none;">
+                            <a href="#" onclick="logoutUser()">🚪 Logout</a>
+                        </li>
+                        <li id="login-link">
+                            <a href="Login.html">
+                                <img src="sign-in-alt (1).png" alt="Login Icon" class="Login-Icon">Login
+                            </a>
+                        </li>
+                        <li id="register-link">
+                            <a href="register.html">
+                                <img src="user (1).png" alt="Register Icon" class="icon-register">Free Register
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="about-container">
+            <div class="about-left">
+                <h1>About <span class="highlight-red">Us</span></h1>
+                <p> India's Growing <span class="highlight-red">Portal</span> for <span class="highlight-red">
+                        Transporter </span> Industry </p>
+                <img src="about us truck image 1.png" alt="Transport Trucks">
+                <h3>How Do We Do?</h3>
+                <p>
+                    We use smart algorithms to match return loads with empty trucks, reducing fuel waste and increasing
+                    profits.
+                    Our platform offers real-time tracking, easy booking, and QR-based digital payments.
+                    With a user-friendly interface and secure system, LoadConnect connects rural producers, urban
+                    buyers, and vehicle owners efficiently.
+                    We're also working on AI suggestions, live updates, and a mobile app for even better logistics.
+                </p>
+            </div>
+            <div class="about-right">
+                <h2>Welcome to <span class="highlight-blue">Load</span><span class="highlight-red">Connect</span></h2>
+                <h3>Who We Are?</h3>
+                <p>
+                    We are a passionate team of students from the Indian Institute of Technology Patna, pursuing a
+                    Hybrid UG program in Computer Science & Data Analytics. As part of our Capstone project, we are
+                    building LoadConnect — a smart logistics platform designed to revolutionize rural-to-urban goods
+                    transportation.
+                    <br>
+                    Our mission is to solve the widespread issue of empty return trips in commercial trucking by
+                    intelligently connecting vehicle owners, rural producers, and urban buyers. Through real-time
+                    tracking, load matching, and digital tools, we aim to make transportation smarter, greener, and more
+                    profitable for everyone.
+                    <br>
+                    At LoadConnect, we believe in innovation with impact. Our platform is more than a project — it’s a
+                    step toward sustainable logistics that empowers rural communities and optimizes transport networks
+                    across India.
+                </p>
+                <h3>What We Do?</h3>
+                <p>
+                    At LoadConnect, we connect vehicle owners, rural producers, and urban buyers through a smart
+                    logistics platform.
+                    <br>
+                    We help minimize empty return trips by matching available vehicles with goods that need transport.
+                    <br>
+                    Our platform makes load booking simple, supports real-time tracking, and enables secure digital
+                    payments — making transportation more efficient, affordable, and eco-friendly.
+
+                </p>
+                <h3>Team Purpose</h3>
+                At LoadConnect, our team is driven by a shared vision — to revolutionize logistics by making
+                transportation
+                faster, smarter, and more accessible. We believe in collaboration, innovation, and delivering
+                real-world impact
+                to our customers and partners.
+                Each member of our team plays a vital role in ensuring that our platform remains reliable,
+                user-friendly, and
+                aligned with the ever-evolving needs of the logistics industry.
+                </p>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="footer">
+            <div class="footer-first">
+                <h2>Load<span class="highlight-red">Connect</span></h2>
+                <img src="final logo Loadconnct.png" alt="LoadConnect">
+            </div>
+            <!-- coloumn -----1 -->
+            <div class="footer-column">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blog</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <ul>
+                    <li><a href="Login.html">Log-in</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="contact-info">
+                <h3>contact-info</h3>
+                <p><a href="mailto:loadconnectx78@gmail.com">🔗loadconnectx78@gmail.com</a></p>
+                <p> <a href="tel:+91 9153692861">📞9153692861</a>
+                    /
+                    <a href="tel:+91 8210973690">8210973690</a>
+                    <a href="tel:+91 9114552303">9114552303</a>
+                </p>
+
+
+            </div>
+        </div>
+        <div class="footer-rights">
+            Copyright &#169; loadconnectx78.netlify.app | All rights reserved || 2025
+        </div>
+    </footer>
+<script>
+  window.addEventListener('load', () => {
+    const user = JSON.parse(localStorage.getItem('loadconnectUser'));
+
+    const loginLink = document.getElementById('login-link');
+    const registerLink = document.getElementById('register-link');
+    const userInfo = document.getElementById('user-info');
+    const usernameDisplay = document.getElementById('username-display');
+    const logoutLink = document.getElementById('logout-link');
+
+    if (user) {
+      // Hide login/register
+      if (loginLink) loginLink.style.display = 'none';
+      if (registerLink) registerLink.style.display = 'none';
+
+      // Show welcome and logout
+      if (userInfo && usernameDisplay) {
+        userInfo.style.display = 'inline-block';
+        usernameDisplay.textContent = `Welcome, ${user.name}`;
+      }
+
+      if (logoutLink) logoutLink.style.display = 'inline-block';
+    } else {
+      // Show login/register again
+      if (loginLink) loginLink.style.display = 'inline-block';
+      if (registerLink) registerLink.style.display = 'inline-block';
+
+      // Hide user info and logout
+      if (userInfo) userInfo.style.display = 'none';
+      if (logoutLink) logoutLink.style.display = 'none';
+    }
+  });
+
+  function logoutUser() {
+    localStorage.removeItem('loadconnectUser');
+    localStorage.removeItem('token');
+    alert("✅ Logged out successfully");
+    window.location.href = 'index.html';
+  }
+</script>
+
+</body>
+
+</html>

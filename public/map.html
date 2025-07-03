@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Live Truck Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    #map {
+      height: 80vh;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    #status {
+      font-size: 16px;
+      margin-top: 0.5rem;
+      color: green;
+    }
+
+    input,
+    button {
+      padding: 8px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>📍 Live Truck Tracker</h2>
+
+  <input type="text" id="truckId" placeholder="Enter Truck ID (e.g. TRK123)" />
+  <button onclick="loadLocation()">Track</button>
+  <p id="status">Waiting for truck ID...</p>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+  
+  let map;
+  let marker = null;
+  let trailLine = null;
+
+  window.onload = function () {
+    map = L.map('map').setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    // ✅ Start auto-refresh every 10 seconds
+    setInterval(() => {
+      const truckId = document.getElementById('truckId').value.trim();
+      if (truckId) {
+        loadLocation(truckId);
+      }
+    }, 10000);
+  };
+
+  async function loadLocation(truckIdFromInput = null) {
+    const truckId = truckIdFromInput || document.getElementById('truckId').value.trim();
+    const status = document.getElementById('status');
+
+    if (!truckId) {
+      status.innerText = "⚠️ Please enter a Truck ID.";
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:4000/api/tracking/${truckId}`);
+      const data = await res.json();
+
+      if (data.success && data.location) {
+        const { latitude, longitude } = data.location;
+
+        if (marker !== null) {
+          marker.setLatLng([latitude, longitude]);
+        } else {
+          marker = L.marker([latitude, longitude]).addTo(map);
+        }
+
+        map.setView([latitude, longitude], 13);
+        status.innerText = `✅ Truck ${truckId} at [${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)}]`;
+
+        // ✅ Draw the breadcrumb trail
+        await loadTrail(truckId);
+      } else {
+        status.innerText = "❌ Truck not found.";
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      status.innerText = "❌ Failed to fetch location.";
+    }
+  }
+
+  async function loadTrail(truckId) {
+    try {
+      const res = await fetch(`http://localhost:4000/api/tracking/history/${truckId}`);
+      const data = await res.json();
+
+      if (data.success) {
+        const trailCoords = data.trail.map(point => [Number(point.latitude), Number(point.longitude)]);
+
+        // Remove previous trail if it exists
+        if (trailLine) {
+          map.removeLayer(trailLine);
+        }
+
+        // Draw trail
+        trailLine = L.polyline(trailCoords, { color: 'blue' }).addTo(map);
+      }
+    } catch (err) {
+      console.error('Trail fetch error:', err);
+    }
+  }
+</script>
+
+</body>
+
+</html>

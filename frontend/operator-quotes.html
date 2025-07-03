@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Operator Quotations - LoadConnect</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    h2 { text-align: center; color: #003366; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
+    th { background-color: #003366; color: white; }
+    .status { font-weight: bold; }
+    .accepted { color: green; }
+    .rejected { color: red; }
+    .pending { color: orange; }
+    .btn { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
+    .accept-btn { background-color: green; color: white; }
+    .reject-btn { background-color: red; color: white; }
+  </style>
+</head>
+<body>
+  <h2>📥 Incoming Quotations</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Quote ID</th>
+        <th>Customer ID</th>
+        <th>Load ID</th>
+        <th>Price (₹)</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="quoteTableBody">
+      <tr><td colspan="7">Loading quotations...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const operator = JSON.parse(localStorage.getItem("loadconnectUser"));
+      const tableBody = document.getElementById("quoteTableBody");
+
+      if (!operator || operator.role !== "operator") {
+        tableBody.innerHTML = '<tr><td colspan="7">🚫 You must be logged in as an operator to view this.</td></tr>';
+        return;
+      }
+
+      try {
+        const res = await fetch("https://loadconnect-backend-1.onrender.com/api/quotation/operator/" + operator.id);
+        const result = await res.json();
+
+        if (result.success && result.data.length > 0) {
+          tableBody.innerHTML = "";
+          result.data.forEach(q => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+              <td>${q.id}</td>
+              <td>${q.customer_id}</td>
+              <td>${q.load_id}</td>
+              <td>₹${q.price}</td>
+              <td>${q.message || '-'}</td>
+              <td class="status ${q.status}">${q.status.toUpperCase()}</td>
+              <td>
+                ${q.status === 'pending' ? `
+                  <button class="btn accept-btn" data-id="${q.id}">Accept</button>
+                  <button class="btn reject-btn" data-id="${q.id}">Reject</button>
+                ` : '-'}
+              </td>
+            `;
+
+            tableBody.appendChild(tr);
+          });
+
+          // Attach click events
+          document.querySelectorAll(".accept-btn").forEach(btn => {
+            btn.addEventListener("click", () => updateQuoteStatus(btn.dataset.id, "accepted"));
+          });
+
+          document.querySelectorAll(".reject-btn").forEach(btn => {
+            btn.addEventListener("click", () => updateQuoteStatus(btn.dataset.id, "rejected"));
+          });
+
+        } else {
+          tableBody.innerHTML = '<tr><td colspan="7">No incoming quotes found.</td></tr>';
+        }
+      } catch (err) {
+        console.error("Error loading quotations:", err);
+        tableBody.innerHTML = '<tr><td colspan="7">❌ Server error while loading quotations.</td></tr>';
+      }
+
+      async function updateQuoteStatus(quoteId, status) {
+        try {
+          const res = await fetch("https://loadconnect-backend-1.onrender.com/api/quotation/update/" + quoteId, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status })
+          });
+
+          const result = await res.json();
+          if (result.success) {
+            alert("✅ Status updated!");
+            location.reload(); // Reload to refresh table
+          } else {
+            alert("❌ Failed to update status.");
+          }
+        } catch (err) {
+          console.error("Update error:", err);
+          alert("Server error during status update.");
+        }
+      }
+    });
+  </script>
+</body>
+</html>

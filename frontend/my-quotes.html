@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Quotations - LoadConnect</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h2 { text-align: center; color: #003366; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
+    th { background-color: #003366; color: white; }
+    .status { font-weight: bold; }
+    .accepted { color: green; }
+    .rejected { color: red; }
+    .pending { color: orange; }
+    button.book-btn {
+      padding: 8px 12px;
+      background: #ff5e5e;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📄 My Quotations</h2>
+  <table id="quotesTable">
+    <thead>
+      <tr>
+        <th>Load ID</th>
+        <th>Quoted Price</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="quoteBody">
+      <tr><td colspan="5">Loading your quotes...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const user = JSON.parse(localStorage.getItem("loadconnectUser"));
+      const quoteBody = document.getElementById("quoteBody");
+
+      if (!user || user.role !== "customer") {
+        quoteBody.innerHTML = '<tr><td colspan="5">🚫 You must be logged in as a customer to view your quotes.</td></tr>';
+        return;
+      }
+
+      try {
+        const res = await fetch("https://loadconnect-backend-1.onrender.com/api/quotation/customer/" + user.id);
+        const result = await res.json();
+
+        if (result.success && result.data.length > 0) {
+          quoteBody.innerHTML = "";
+          result.data.forEach(q => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+              <td>${q.load_id}</td>
+              <td>₹${q.price}</td>
+              <td>${q.message || '-'}</td>
+              <td class="status ${q.status}">${q.status.toUpperCase()}</td>
+              <td>
+                ${q.status === 'accepted' ? `<button class="book-btn" data-quote-id="${q.id}" data-load-id="${q.load_id}">Book Now</button>` : '-'}
+              </td>
+            `;
+
+            quoteBody.appendChild(tr);
+          });
+
+          // Add event listeners to all "Book Now" buttons
+          document.querySelectorAll('.book-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const quote_id = btn.dataset.quoteId;
+              const load_id = btn.dataset.loadId;
+
+              const bookRes = await fetch("https://loadconnect-backend-1.onrender.com/api/booking/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quote_id, customer_id: user.id, load_id })
+              });
+
+              const bookResult = await bookRes.json();
+              if (bookResult.success) {
+                alert("✅ Booking successful!");
+                btn.textContent = "Booked";
+                btn.disabled = true;
+              } else {
+                alert("❌ Booking failed");
+              }
+            });
+          });
+
+        } else {
+          quoteBody.innerHTML = '<tr><td colspan="5">No quotes submitted yet.</td></tr>';
+        }
+
+      } catch (err) {
+        console.error("Fetch quotes error:", err);
+        quoteBody.innerHTML = '<tr><td colspan="5">❌ Server error loading quotes.</td></tr>';
+      }
+    });
+  </script>
+</body>
+</html>

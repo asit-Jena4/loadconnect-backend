@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post a Load - LoadConnect</title>
+  <style>
+    /* General styling */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #e0f2ff;
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient background blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.3;
+      animation: float 10s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+
+    .blob1 {
+      background: #3b82f6;
+      width: 300px;
+      height: 300px;
+      top: -80px;
+      left: -80px;
+    }
+
+    .blob2 {
+      background: #f43f5e;
+      width: 300px;
+      height: 300px;
+      bottom: -100px;
+      right: -80px;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(40px) rotate(20deg);
+      }
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 30px;
+      background-color: rgba(255, 255, 255, 0.92);
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      color: #003366;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      animation: textPop 1.2s ease;
+    }
+
+    @keyframes textPop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    form input:focus {
+      outline: none;
+      border-color: #003366;
+      box-shadow: 0 0 8px rgba(0, 51, 102, 0.3);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background-color: #ff5e5e;
+      color: white;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #e84e4e;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255, 94, 94, 0.4);
+    }
+
+    #responseMessage {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 16px;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating animated blobs -->
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <h2>🚛 Post a New Load</h2>
+
+    <form id="loadForm">
+      <input name="load_type" placeholder="Load Type (Full/Part)" required />
+      <input name="source_city" placeholder="Source City" required />
+      <input name="destination_city" placeholder="Destination City" required />
+      <input name="material_type" placeholder="Material Type" required />
+      <input name="weight" placeholder="Weight (kg)" required />
+      <input name="truck_type" placeholder="Truck Type" required />
+      <input name="number_of_trucks" placeholder="Number of Trucks" required />
+      <input name="scheduled_date" type="date" required />
+      <input name="posted_by" placeholder="Posted By (optional)" />
+      <button type="submit">📤 Submit Load</button>
+    </form>
+
+    <div id="responseMessage"></div>
+  </div>
+
+  <script>
+    document.getElementById('loadForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch('https://loadconnect-backend.onrender.com/api/load/post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        const messageBox = document.getElementById('responseMessage');
+
+        if (result.success) {
+          messageBox.innerHTML = `<p class="success">✅ ${result.message}</p>`;
+          this.reset();
+        } else {
+          messageBox.innerHTML = `<p class="error">❌ ${result.error}</p>`;
+        }
+      } catch (error) {
+        document.getElementById('responseMessage').innerHTML =
+          `<p class="error">⚠️ Server error. Please try again later.</p>`;
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
+
+

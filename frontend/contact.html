@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="left">
+                <img src="final logo Loadconnct.png" alt="Loadconncet Logo" class="square-logo " />
+                <span class="logo-txt"></span>
+            </div>
+            <div class="left">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blogs</a></li>
+                    <li><a href="contact.html">Contact us</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="right">
+                    <ul class="navbar-auth">
+                        <li id="user-info" style="display: none;">
+                            👤 <span id="username-display">User</span>
+                        </li>
+                        <li id="logout-link" style="display: none;">
+                            <a href="#" onclick="logoutUser()">🚪 Logout</a>
+                        </li>
+                        <li id="login-link">
+                            <a href="Login.html">
+                                <img src="sign-in-alt (1).png" alt="Login Icon" class="Login-Icon">Login
+                            </a>
+                        </li>
+                        <li id="register-link">
+                            <a href="register.html">
+                                <img src="user (1).png" alt="Register Icon" class="icon-register">Free Register
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="contact-container">
+            <div class="contact-left"></div>
+            <h1>Contact <span class="highlight-red">Us</span></h1>
+            <p>At Load<span class="highlight-red">Connect</span>, we welcome collaboration, feedback, and opportunities
+                to grow. Whether you're a rural
+                <br>
+                producer, a logistics partner, a researcher, or a technology enthusiast—we’d love to connect with you.
+            </p>
+            <h3>Essential Elements to Include:</h3>
+            <h3>General Info:</h3>
+            <li>Project Name: LoadConnect – Smart Logistics Platform</li>
+            <li>Developed by: Team-78, Hybrid UG Program</li>
+            <li>Institute: Indian Institute of Technology Patna</li>
+            <h3>Contacts:</h3>
+            <h4>Prakash Kumar Jha</h4>
+            <li><a href="mailto:prakash_24a12res446@iitp.ac.in"><img src="gmail icon.png" alt="Mail"
+                        class="Mail-icon">Mail</a></li>
+            <li><a href="https://www.linkedin.com/in/jhaprakash08" target="_blank"><img src="linkedin icon.png"
+                        alt="linkedin" class="linkedin-img">Linkedin</a></li>
+            <h4>Akshay Kumar kushwaha</h4>
+            <li><a href="mailto:akshay_24a12res62@iitp.ac.in"><img src="gmail icon.png" alt="Mail"
+                        class="Mail-icon">Mail</a></li>
+            <li><a href="http://www.linkedin.com/in/akshay-kumar-kushwaha-094350321" target="_blank"><img
+                        src="linkedin icon.png" alt="linkedin" class="linkedin-img">Linkedin</a></li>
+            <h4>Asit Kumar Jena</h4>
+            <li><a href="mailto:asit_24a12res158@iitp.ac.in"><img src="gmail icon.png" alt="Mail"
+                        class="Mail-icon">Mail</a></li>
+            <li><a href="https://www.linkedin.com/in/asit-jena-30b5a2368" target="_blank"><img src="linkedin icon.png"
+                        alt="linkedin" class="linkedin-img">Linkedin</a></li>
+            <h3>Load<span class="highlight-red">Connect</span></h3>
+            <li>Load posting and bidding system</li>
+            <li>Real-time GPS tracking of shipments</li>
+            <li>Analytics dashboard for logistics performance</li>
+            <li>Role-based access for Admin, Shippers, and Carriers</li>
+            <li>In-app communication between users</li>
+            <div class="contact-right">
+                <!-- this is for form fill up  -->
+                <h2>Inquiry<span class="highlight-red">Form</span></h2>
+                <p class="subtitle">Please fill in the requisite details in the following form. We shall get back to
+                    you.</p>
+
+                <form id="inquiryForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Phone Number<span class="required">*</span></label>
+                            <div class="phone-input">
+                                <div class="country-code">
+                                    <div class="flag"></div>
+                                    <span>+91</span>
+                                </div>
+                                <input type="tel" id="phone" name="phone" placeholder="Enter Phone No." required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">Name<span class="required">*</span></label>
+                            <input type="text" id="name" name="name" placeholder="Enter Name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email<span class="required">*</span></label>
+                            <input type="email" id="email" name="email" placeholder="Username@Domain.Com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category">Category<span class="required">*</span></label>
+                            <select id="category" name="category" required>
+                                <option value="">Select</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="support">Technical Support</option>
+                                <option value="sales">Sales</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="feedback">Feedback</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="message">Message<span class="required">*</span></label>
+                        <textarea id="message" name="message" placeholder="Write Message" required></textarea>
+                    </div>
+
+                    <div class="captcha-section">
+                        <div class="captcha-image" id="captchaImage">5DJ3</div>
+                        <button type="button" class="refresh-btn" onclick="refreshCaptcha()"
+                            title="Refresh Captcha">🔄</button>
+                        <input type="text" class="captcha-input" placeholder="Enter Code" id="captchaInput" required>
+                        <button type="submit" class="submit-btn">Submit</button>
+                    </div>
+
+                    <div class="clear"></div>
+                </form>
+            </div>
+            <script src="contact.js"></script>
+        </div>
+        <div>
+            <p>
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3600.0818719457184!2d84.84872167416665!3d25.535649617911314!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed577f6954a4ab%3A0x6ce8f1b9fc2aa02a!2sIndian%20Institute%20of%20Technology%2C%20Patna!5e0!3m2!1sen!2sin!4v1748714981783!5m2!1sen!2sin"
+                    width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </p>
+        </div>
+    </main>
+    <!-- this is the footer part  -->
+    <footer>
+        <div class="footer">
+            <div class="footer-first">
+                <h2>Load<span class="highlight-red">Connect</span></h2>
+                <img src="final logo Loadconnct.png" alt="LoadConnect">
+            </div>
+            <!-- coloumn -----1 -->
+            <div class="footer-column">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="Blog.html">Blog</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <ul>
+                    <li><a href="Login.html">Log-in</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="contact-info">
+                <h3>contact-info</h3>
+                <p><a href="mailto:loadconnectx78@gmail.com">🔗loadconnectx78@gmail.com</a></p>
+                <p> <a href="tel:+91 9153692861">📞9153692861</a>
+                    /
+                    <a href="tel:+91 8210973690">8210973690</a>
+                    <a href="tel:+91 9114552303">9114552303</a>
+                </p>
+
+
+            </div>
+        </div>
+        <div class="footer-rights">
+            Copyright &#169; loadconnectx78.netlify.app | All rights reserved || 2025
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('loadconnectUser'));
+
+            const loginLink = document.getElementById('login-link');
+            const registerLink = document.getElementById('register-link');
+            const userInfo = document.getElementById('user-info');
+            const usernameDisplay = document.getElementById('username-display');
+            const logoutLink = document.getElementById('logout-link');
+
+            if (user) {
+                // Hide login/register
+                if (loginLink) loginLink.style.display = 'none';
+                if (registerLink) registerLink.style.display = 'none';
+
+                // Show welcome and logout
+                if (userInfo && usernameDisplay) {
+                    userInfo.style.display = 'inline-block';
+                    usernameDisplay.textContent = `Welcome, ${user.name}`;
+                }
+
+                if (logoutLink) logoutLink.style.display = 'inline-block';
+            } else {
+                // Show login/register again
+                if (loginLink) loginLink.style.display = 'inline-block';
+                if (registerLink) registerLink.style.display = 'inline-block';
+
+                // Hide user info and logout
+                if (userInfo) userInfo.style.display = 'none';
+                if (logoutLink) logoutLink.style.display = 'none';
+            }
+        });
+
+        function logoutUser() {
+            localStorage.removeItem('loadconnectUser');
+            localStorage.removeItem('token');
+            alert("✅ Logged out successfully");
+            window.location.href = 'index.html';
+        }
+    </script>
+
+
+</body>
+
+</html>

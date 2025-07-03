@@ -1,0 +1,300 @@
+index.html real loadconnect
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="left">
+                <img src="final logo Loadconnct.png" alt="Loadconncet Logo" class="square-logo " />
+                <span class="logo-txt"></span>
+            </div>
+            <div class="left">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="/">About</a></li>
+                    <li><a href="/">Services</a></li>
+                    <li><a href="/">Blogs</a></li>
+                    <li><a href="/">Contact us</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="right">
+                    <ul>
+                        <li><a href="/"> <img src="sign-in-alt (1).png" alt="Login-Icon" class="Login-Icon">Login</a>
+                        </li>
+                        <li><a href="/"> <img src="user (1).png" alt="Register Icon" class="icon-register">Free
+                                Register</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to LoadConnect</h1>
+                <p>Your one-stop solution for all your logistics needs.</p>
+                <a href="/" class="btn">Get Started</a>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Our Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <img src="feature1.png" alt="Feature 1">
+                    <h3>Fast Delivery</h3>
+                    <p>We ensure your goods are delivered on time, every time.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="feature2.png" alt="Feature 2">
+                    <h3>24/7 Support</h3>
+                    <p>Our support team is available around the clock to assist you.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="feature3.png" alt="Feature 3">
+                    <h3>Affordable Rates</h3>
+                    <p>We offer competitive pricing without compromising on quality.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <h2>What Our Clients Say</h2>
+            <div class="testimonial-list">
+                <blockquote>"LoadConnect has transformed our logistics operations!" - Client A</blockquote>
+                <blockquote>"Their service is top-notch and reliable." - Client B</blockquote>
+                <blockquote>"Highly recommend LoadConnect for any logistics needs." - Client C</blockquote>
+            </div>
+        </section>
+    </main>
+
+</body>
+
+</html>
+
+
+
+
+//////style.css//////
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-image: url('Loadconnect\ back\ image.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+}
+
+/* Navigation */
+header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0.6rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+/* Logo Section */
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.square-logo {
+    width: 125px;
+    height: 70px;
+    background-color:#ffffff; /* Example color */
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 60px;
+}
+
+/* Navigation links */
+.nav-links ul,
+.right ul {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    color: #333;
+    font-size: 700;
+    transition: color 0.3s;
+    margin-right: 60px;
+}
+.nav-links li,
+.right a{
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+.nav-links a:hover,
+.right a:hover {
+    color: red;
+}
+
+.nav-links ul,
+.left ul{
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin-right: 300px;
+}
+.nav-links li,
+.left a{
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+.nav-links a:hover,
+.left a:hover {
+    color: red;
+}
+
+/* Login and Register Buttons */
+
+/* Icons */
+.icon-register,
+.Login-Icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('hero-bg.jpg') center/cover no-repeat;
+    color: #fff;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.btn {
+    display: inline-block;
+    background-color: #ff6f61;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #e65c50;
+}
+
+/* Features Section */
+.features {
+    padding: 60px 20px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.features h2 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+}
+
+.feature-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.feature-item {
+    background: #f1f1f1;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+}
+
+.feature-item img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.feature-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+/* Testimonials Section */
+.testimonials {
+    padding: 60px 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+}
+
+.testimonials h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.testimonial-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.testimonial-list blockquote {
+    font-style: italic;
+    background: #fff;
+    padding: 20px;
+    border-left: 5px solid #ff6f61;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}

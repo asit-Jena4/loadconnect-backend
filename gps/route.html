@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Route Optimization (Free)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✅ Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+    }
+    #map {
+      height: 80vh;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🧭 Free Route Optimizer (No Billing Needed)</h2>
+
+  <input type="text" id="source" placeholder="Source (e.g. Kolkata)" />
+  <input type="text" id="destination" placeholder="Destination (e.g. Bhubaneswar)" />
+  <button onclick="showRoute()">Show Route</button>
+
+  <div id="map"></div>
+
+  <!-- ✅ JS scripts -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
+  <script src="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.js"></script>
+
+  <script>
+    const map = L.map('map').setView([20.5937, 78.9629], 5); // India center
+    let control;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    async function geocode(city) {
+      const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${encodeURIComponent(city)}&f=json`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.candidates && data.candidates.length > 0) {
+        const { x, y } = data.candidates[0].location;
+        return [y, x]; // lat, lon
+      } else {
+        throw new Error(`Location "${city}" not found`);
+      }
+    }
+
+    async function showRoute() {
+      const source = document.getElementById('source').value.trim();
+      const destination = document.getElementById('destination').value.trim();
+
+      if (!source || !destination) {
+        alert("Please enter both source and destination.");
+        return;
+      }
+
+      try {
+        const fromLatLng = await geocode(source);
+        const toLatLng = await geocode(destination);
+
+        console.log("✅ From:", fromLatLng, "To:", toLatLng);
+
+        if (control) map.removeControl(control); // clear old route
+
+        control = L.Routing.control({
+          waypoints: [
+            L.latLng(...fromLatLng),
+            L.latLng(...toLatLng)
+          ],
+          routeWhileDragging: false
+        }).addTo(map);
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

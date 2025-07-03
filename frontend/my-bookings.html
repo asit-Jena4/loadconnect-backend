@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Bookings - LoadConnect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #003366;
+      padding: 15px;
+      color: white;
+      text-align: center;
+    }
+
+    h2 {
+      text-align: center;
+      color: #003366;
+      margin-top: 20px;
+    }
+
+    .table-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: center;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #e2e8f0;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .status {
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    .status.pending {
+      color: orange;
+    }
+
+    .status.accepted {
+      color: green;
+    }
+
+    .status.rejected {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚛 LoadConnect - My Bookings</h1>
+  </header>
+
+  <div class="table-container">
+    <h2>📄 Your Load Quotations</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Load ID</th>
+          <th>Source</th>
+          <th>Destination</th>
+          <th>Quote Price</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="booking-table-body">
+        <!-- Data will be injected via JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = JSON.parse(localStorage.getItem("loadconnectUser"));
+      if (!user || user.role !== 'customer') {
+        alert("🚫 Only logged-in customers can view bookings.");
+        window.location.href = 'Login.html';
+        return;
+      }
+
+      fetch(`https://loadconnect-backend-1.onrender.com/api/quotation/by-customer/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("booking-table-body");
+          if (data.success && data.data.length > 0) {
+            data.data.forEach(quote => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${quote.load_id}</td>
+                <td>${quote.source_city || '-'}</td>
+                <td>${quote.destination_city || '-'}</td>
+                <td>₹${quote.price}</td>
+                <td><span class="status ${quote.status}">${quote.status.toUpperCase()}</span></td>
+                <td>${new Date(quote.created_at).toLocaleDateString()}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="6">No bookings found</td></tr>';
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching bookings:", err);
+          document.getElementById("booking-table-body").innerHTML = '<tr><td colspan="6">Server error</td></tr>';
+        });
+    });
+  </script>
+</body>
+</html>

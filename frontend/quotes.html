@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Incoming Quotations</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    .action-btn { padding: 6px 10px; margin-right: 5px; cursor: pointer; border: none; }
+    .accept { background-color: green; color: white; }
+    .reject { background-color: red; color: white; }
+  </style>
+</head>
+<body>
+  <h2>📩 Incoming Quotations</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Load ID</th>
+        <th>Customer ID</th>
+        <th>Price</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="quotation-table-body">
+      <!-- Rows will be inserted by JS -->
+    </tbody>
+  </table>
+
+  <script>
+    async function fetchQuotations() {
+      const res = await fetch("https://loadconnect-backend-1.onrender.com/api/quotation/all");
+      const data = await res.json();
+      const tbody = document.getElementById("quotation-table-body");
+      tbody.innerHTML = "";
+
+      if (data.success) {
+        data.data.forEach(q => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${q.load_id}</td>
+            <td>${q.customer_id}</td>
+            <td>${q.price}</td>
+            <td>${q.message || "-"}</td>
+            <td>${q.status}</td>
+            <td>
+              ${q.status === 'pending' ? `
+                <button class="action-btn accept" onclick="updateStatus(${q.id}, 'accepted')">Accept</button>
+                <button class="action-btn reject" onclick="updateStatus(${q.id}, 'rejected')">Reject</button>
+              ` : q.status}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="6">❌ Failed to fetch quotations.</td></tr>`;
+      }
+    }
+
+    async function updateStatus(id, status) {
+      const confirmAction = confirm(`Are you sure you want to ${status} this quote?`);
+      if (!confirmAction) return;
+
+      const res = await fetch(`https://loadconnect-backend-1.onrender.com/api/quotation/update/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        alert("✅ Status updated!");
+        fetchQuotations();
+      } else {
+        alert("❌ Failed to update status.");
+      }
+    }
+
+    fetchQuotations();
+  </script>
+</body>
+</html>
+
